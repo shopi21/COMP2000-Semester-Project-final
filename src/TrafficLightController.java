@@ -1,13 +1,10 @@
 import javax.swing.*;
 import java.awt.*;
 import java.util.stream.Stream;
+import java.util.Map;
+import java.util.stream.Collectors;
 
-public long countGreenLights() {
-    return Stream.of(
-            northLight, eastLight, southLight, westLight)
-            .filter(light -> light == LightState.GREEN)
-            .count();
-}
+
 
 public class TrafficLightController {
 
@@ -138,6 +135,25 @@ public class TrafficLightController {
     public boolean canWestMove() {
         return westLight == LightState.GREEN;
     }
+
+    public long countGreenLights() {
+    return Stream.of(
+            northLight, eastLight, southLight, westLight)
+            .filter(light -> light == LightState.GREEN)
+            .count();
+    }
+
+    public Map<String, LightState> getAllLightStates() {
+    return Stream.of(
+            Map.entry("North", northLight),
+            Map.entry("East", eastLight),
+            Map.entry("South", southLight),
+            Map.entry("West", westLight)
+    ).collect(Collectors.toMap(
+            Map.Entry::getKey,
+            Map.Entry::getValue
+    ));
+   }
 
     public void drawVertical(
             Graphics2D g2,
