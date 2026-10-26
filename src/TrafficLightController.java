@@ -1,5 +1,13 @@
 import javax.swing.*;
 import java.awt.*;
+import java.util.stream.Stream;
+
+public long countGreenLights() {
+    return Stream.of(
+            northLight, eastLight, southLight, westLight)
+            .filter(light -> light == LightState.GREEN)
+            .count();
+}
 
 public class TrafficLightController {
 
