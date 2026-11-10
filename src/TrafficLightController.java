@@ -1,3 +1,4 @@
+
 import java.awt.*;
 import java.util.Arrays;
 import java.util.EnumMap;
@@ -15,15 +16,19 @@ public class TrafficLightController {
         GREEN
     }
 
-    private static final Direction[] ORDER = { Direction.SOUTH, Direction.NORTH, Direction.EAST, Direction.WEST };
+    private static final Direction[] ORDER = {
+        Direction.SOUTH, Direction.NORTH, Direction.EAST, Direction.WEST
+    };
 
-    private final Map<Direction, LightState> lights = new EnumMap<>(Direction.class);
+    private final Map<Direction, LightState> lights =
+            new EnumMap<>(Direction.class);
+
     private final Set<Direction> approaches;
 
     private SignalPhase phase;
     private int remainingMs;
 
-    private ToIntFunction<Direction> demand = d -> 0; // cars waiting on an approach, supplied by MapPanel
+    private ToIntFunction<Direction> demand = d -> 0;
 
     public void setDemand(ToIntFunction<Direction> demand) {
         this.demand = demand;
@@ -31,11 +36,16 @@ public class TrafficLightController {
 
     int greenTimeFor(Direction approach) {
         SimulationConfig cfg = SimulationConfig.getInstance();
+
         if (!cfg.adaptiveLights) {
             return cfg.greenMs;
         }
+
         int queued = demand.applyAsInt(approach);
-        return Math.max(cfg.minGreenMs, Math.min(cfg.maxGreenMs, cfg.minGreenMs + queued * cfg.msPerQueuedCar));
+
+        return Math.max(cfg.minGreenMs,
+                Math.min(cfg.maxGreenMs,
+                        cfg.minGreenMs + queued * cfg.msPerQueuedCar));
     }
 
     public TrafficLightController() {
@@ -43,22 +53,25 @@ public class TrafficLightController {
     }
 
     /**
-     * @param approaches    headings that actually arrive at this junction (a
-     *                      T-junction has 3)
-     * @param startOffsetMs fast-forwards the cycle so neighbouring junctions are
-     *                      not in sync
+     * @param approaches headings that actually arrive at this junction
+     * @param startOffsetMs fast-forwards the cycle
      */
     public TrafficLightController(Set<Direction> approaches, int startOffsetMs) {
         this.approaches = EnumSet.copyOf(approaches);
+
         setAllRed();
+
         phase = new SignalPhase.Green(firstApproach());
         phase.enter(this);
+
         remainingMs = phase.durationMs();
+
         update(startOffsetMs);
     }
 
     public final void update(int dtMs) {
         remainingMs -= dtMs;
+
         while (remainingMs <= 0) {
             phase = phase.next(this);
             phase.enter(this);
@@ -66,7 +79,7 @@ public class TrafficLightController {
         }
     }
 
-    // used by SignalPhase
+    // Used by SignalPhase
 
     void setAllRed() {
         Arrays.stream(Direction.values())
@@ -104,7 +117,7 @@ public class TrafficLightController {
         return 0;
     }
 
-    // queries
+    // Queries
 
     public LightState getLight(Direction heading) {
         return lights.get(heading);
@@ -112,6 +125,11 @@ public class TrafficLightController {
 
     public boolean canMove(Direction heading) {
         return lights.get(heading) == LightState.GREEN;
+    }
+
+    // ADDED: Returns a copy of all traffic-light states for analytics
+    public Map<Direction, LightState> getAllLightStates() {
+        return new EnumMap<>(lights);
     }
 
     public LightState getNorthLight() {
@@ -162,22 +180,16 @@ public class TrafficLightController {
         return canMove(Direction.WEST);
     }
 
-    // drawing
+    // Drawing
 
     public void drawVertical(
             Graphics2D g2,
             int x,
             int y,
             LightState state) {
-        g2.setColor(Color.BLACK);
 
-        g2.fillRoundRect(
-                x,
-                y,
-                24,
-                70,
-                8,
-                8);
+        g2.setColor(Color.BLACK);
+        g2.fillRoundRect(x, y, 24, 70, 8, 8);
 
         if (state == LightState.RED) {
             g2.setColor(Color.RED);
@@ -185,11 +197,7 @@ public class TrafficLightController {
             g2.setColor(new Color(80, 0, 0));
         }
 
-        g2.fillOval(
-                x + 5,
-                y + 5,
-                14,
-                14);
+        g2.fillOval(x + 5, y + 5, 14, 14);
 
         if (state == LightState.YELLOW) {
             g2.setColor(Color.YELLOW);
@@ -197,11 +205,7 @@ public class TrafficLightController {
             g2.setColor(new Color(80, 80, 0));
         }
 
-        g2.fillOval(
-                x + 5,
-                y + 28,
-                14,
-                14);
+        g2.fillOval(x + 5, y + 28, 14, 14);
 
         if (state == LightState.GREEN) {
             g2.setColor(Color.GREEN);
@@ -209,11 +213,7 @@ public class TrafficLightController {
             g2.setColor(new Color(0, 80, 0));
         }
 
-        g2.fillOval(
-                x + 5,
-                y + 51,
-                14,
-                14);
+        g2.fillOval(x + 5, y + 51, 14, 14);
     }
 
     public void drawHorizontal(
@@ -221,15 +221,9 @@ public class TrafficLightController {
             int x,
             int y,
             LightState state) {
-        g2.setColor(Color.BLACK);
 
-        g2.fillRoundRect(
-                x,
-                y,
-                70,
-                24,
-                8,
-                8);
+        g2.setColor(Color.BLACK);
+        g2.fillRoundRect(x, y, 70, 24, 8, 8);
 
         if (state == LightState.RED) {
             g2.setColor(Color.RED);
@@ -237,11 +231,7 @@ public class TrafficLightController {
             g2.setColor(new Color(80, 0, 0));
         }
 
-        g2.fillOval(
-                x + 5,
-                y + 5,
-                14,
-                14);
+        g2.fillOval(x + 5, y + 5, 14, 14);
 
         if (state == LightState.YELLOW) {
             g2.setColor(Color.YELLOW);
@@ -249,11 +239,7 @@ public class TrafficLightController {
             g2.setColor(new Color(80, 80, 0));
         }
 
-        g2.fillOval(
-                x + 28,
-                y + 5,
-                14,
-                14);
+        g2.fillOval(x + 28, y + 5, 14, 14);
 
         if (state == LightState.GREEN) {
             g2.setColor(Color.GREEN);
@@ -261,10 +247,6 @@ public class TrafficLightController {
             g2.setColor(new Color(0, 80, 0));
         }
 
-        g2.fillOval(
-                x + 51,
-                y + 5,
-                14,
-                14);
+        g2.fillOval(x + 51, y + 5, 14, 14);
     }
 }
